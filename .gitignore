@@ -1,0 +1,9 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Notebook Checkpoints
+.ipynb_checkpoints/
+
+#Retirar os arquivos do Logs de verificação dos GAP's do GIT
+*.log
