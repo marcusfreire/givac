@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 #path environment
 if 'SUMO_HOME' in os.environ:
     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -7,7 +8,7 @@ if 'SUMO_HOME' in os.environ:
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 import traci
-from plexe import Plexe, ACC, CACC
+from plexe import Plexe, ACC, CACC, RADAR_DISTANCE,POS_X, POS_Y
 
 import random
 
@@ -47,7 +48,7 @@ def communicate(plexe, topology):
             # pass front vehicle data to CACC
             plexe.set_front_vehicle_data(vid, fd)
             # compute GPS distance and pass it to the fake CACC
-            distance = traci.get_distance(plexe, vid, l["front"])
+            distance = get_distance(plexe, vid, l["front"])
             plexe.set_front_vehicle_fake_data(vid, fd, distance)
 
 
@@ -86,3 +87,16 @@ def compute_leaving_time(distance_veh_i,speed_veh_i):
     distance = 400 + PLATOON_LENGTH + STOP_LINE - distance_veh_i
     speed = speed_veh_i + 0.00001
     return distance*1.0/speed
+
+def get_distance(plexe, v1, v2):
+    """
+    Returns the distance between two vehicles, removing the length
+    :param plexe: API instance
+    :param v1: id of first vehicle
+    :param v2: id of the second vehicle
+    :return: distance between v1 and v2
+    """
+    v1_data = plexe.get_vehicle_data(v1)
+    v2_data = plexe.get_vehicle_data(v2)
+    return math.sqrt((v1_data[POS_X] - v2_data[POS_X])**2 +
+                     (v1_data[POS_Y] - v2_data[POS_Y])**2) - 4

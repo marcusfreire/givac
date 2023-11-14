@@ -1,5 +1,6 @@
 from .intelligent_intersection import *
 from .intelligent_intersection_with_modification import *
+from .intelligent_intersection_with_dynamic_platoons import *
 
 import datetime 
 t_start = datetime.datetime.now()

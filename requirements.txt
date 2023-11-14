@@ -9,6 +9,8 @@ seaborn==0.13.0
 statsmodels==0.14.0
 sumolib==1.18.0
 traci==1.18.0
+plotly==5.17.0
+EMD-signal==1.5.2
 
 #dependencies
 anyio==4.0.0

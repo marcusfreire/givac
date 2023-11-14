@@ -1,7 +1,8 @@
 # Use a imagem base do Ubuntu 20.04
 FROM ubuntu:20.04
 
-LABEL maintainer="mfreire.e@gmail.com"
+LABEL maintainer.email="mfreire.e@gmail.com"
+LABEL maintainer.name="Marcus Freire"
 
 #Dependências do sistema
 RUN apt-get update -y
