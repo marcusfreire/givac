@@ -2,7 +2,7 @@
 ### Imagem do Docker
 Link para o DockerHub: [sumo-plexe-jupyter](https://hub.docker.com/r/marcusfreire/sumo-plexe-jupyter)
 ```bash
-docker pull marcusfreire/sumo-plexe-jupyter:latest
+sudo docker pull marcusfreire/sumo-plexe-jupyter:latest
  ```
 
 ### Criando o Container
@@ -12,17 +12,17 @@ Com o terminal na pasta que deseja abrir no seu computador digite o comando:
 * **Atenção!** Para que a janela do sumo-gui abra, há um pré-requisito: [Link configurar X11](#como-configurar-o-x11)
 
 ```bash
-docker create -t -i --name givac -p 4000:4000 \
+sudo docker create -t -i --name givac -p 4000:4000 \
     -v ${PWD}:/src/repository/ \
     -e DISPLAY=$DISPLAY \
     -v /dev/dri:/dev/dri \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    sumo-plexe-jupyter:latest
+    marcusfreire/sumo-plexe-jupyter:latest
  ```
  
  #### Iniciando o Container:
  ```bash
-docker start givac
+sudo docker start givac
  ```
  * Agora no seu navegador acesse em [http://127.0.0.1:4000/](http://127.0.0.1:4000/) ou [http://localhost:4000](http://localhost:4000/)
 
