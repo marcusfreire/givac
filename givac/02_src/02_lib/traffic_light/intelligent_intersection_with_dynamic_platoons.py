@@ -54,7 +54,7 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
 
             self.step += 1
 
-        traci.close()
+        # traci.close()
     
     def check_all_leaders(self):
         # check all leaders to decide whether add to serving list or delete from topology
@@ -81,8 +81,8 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
             veh_route = veh.split(".")[2]
             self.excluir_platoon_topology(veh,int(veh_route))
 
-        # delete vehcles from the list which has already passed the intersection
-        self.serving_list[:] = [element for element in self.serving_list if traci.vehicle.getDistance(element[0]) < 400 + self.topology[element[0]]["distance"] + STOP_LINE]
+        # delete vehcles from the list which has already passed the intersection and not Leader
+        self.serving_list[:] = [element for element in self.serving_list if ('ISleader' in self.topology[element[0]] and traci.vehicle.getDistance(element[0]) < 400 + self.topology[element[0]]["distance"] + STOP_LINE)]
         self.serving_list_veh_only = [element[0] for element in self.serving_list]
 
     def smart_traffic_light(self,plexe):
@@ -189,7 +189,7 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
 
     def get_distance_between_leaders(self,plexe,distance_max = 25):
         
-        for laneID,leaders in self.dic_leader.items():
+        for routeID,leaders in self.dic_leader.items():
             qtd_lead = len(leaders)
             if qtd_lead > 1:
                 main_leader = leaders[0]
@@ -200,15 +200,25 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
     #                 print("main_leader:{} \t leadID:{}".format(main_leader,leadID))
                     if self.topology[leadID]["tail"] != None:# Atualizando distância do plator
                         self.calc_platoon_size(plexe,leadID,self.topology)
+
+                    #Adicionando Zona de Bloqueio para entrada no pelotão
+                    position_lane_max = INITIAL_LANE_INTERSECTION_LENGTH - BLOCKING_ZONE
+                    if (traci.vehicle.getLaneID(main_leader)[0:3]=='end') and (traci.vehicle.getLanePosition(main_leader)> position_lane_max):
+                        main_leader = leadID
+                        continue
+
+                    if (traci.vehicle.getLaneID(main_leader)[0:3]!='end'):
+                        main_leader = leadID
+                        continue
                 
                     distance = get_distance(plexe, main_leader, leadID)
-                    
+
     #                 print("[{}-{}]: {}".format(main_leader,leadID,distance))
                     if distance < distance_max:
                         if self.topology[main_leader]["tail"]== None: # Lider sem pelotão
-                            self.join_platoon(plexe, main_leader, leadID,laneID)
+                            self.join_platoon(plexe, main_leader, leadID,routeID)
                         else:
-                            self.join_platoon(plexe, self.topology[main_leader]["tail"], leadID,laneID)
+                            self.join_platoon(plexe, self.topology[main_leader]["tail"], leadID,routeID)
     #                     imprimirTopologia(topology)
                     else:
                         main_leader = leadID                   
