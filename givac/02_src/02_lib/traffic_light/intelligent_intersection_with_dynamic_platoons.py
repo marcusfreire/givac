@@ -46,7 +46,7 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
             
             if self.step % 100 == 5:
                 # at 1 second, let the joiner get closer to the platoon
-                self.get_distance_between_leaders(plexe,distance_max = self.DISTANCE_MAX)
+                self.get_distance_between_leaders(plexe)
     #             imprimirTopologia(topology)
 
             if self.step % self.ADD_PLATOON_STEP == 0:  # add new platoon every X steps
@@ -54,7 +54,7 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
 
             self.step += 1
 
-        # traci.close()
+        traci.close()
     
     def check_all_leaders(self):
         # check all leaders to decide whether add to serving list or delete from topology
@@ -151,31 +151,30 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
         
         #Adicionar o ultimo carro adicionado ao plator
         if self.topology[joiner_id]["tail"]!= None: #Verificar se ja é líder de outro pelotão
+            
             #Reiniciar a liderança do segundo pelotão
             tailID = self.topology[joiner_id]["tail"]
-            while tailID != joiner_id:
-                distance = get_distance(plexe, LEADER, tailID)
-                if distance < self.DISTANCE_MAX:
-                    self.topology[tailID]["leader"] = LEADER
-                    tailID = self.topology[tailID]["front"]
-                else:
-                    tailID_TEMP= self.topology[tailID]["front"]
-                    self.topology[joiner_id]["tail"] = tailID_TEMP
-                    self.topology[tailID] = {"ISleader": True, "tail": None, "second": None, "distance": VEHICLE_LENGTH}
-                    plexe.set_active_controller(tailID, ACC)
-                    traci.vehicle.setColor(tailID, (255,255,255))  # white
-                    
-                    
-                    self.dic_leader[laneID].append(tailID)
-                    self.dic_leader[laneID] = self.order_vet_veh(self.dic_leader[laneID],laneID)
-                    
-                    tailID = tailID_TEMP
-                    
+            SecondLEADER = self.topology[joiner_id]["second"]
+
+            self.topology[SecondLEADER] = {"ISleader": True, "tail": None, "second": None, "distance": VEHICLE_LENGTH}
+            plexe.set_active_controller(SecondLEADER, ACC)
+            traci.vehicle.setColor(SecondLEADER, (255,255,255))  # white
+
+            self.dic_leader[laneID].append(SecondLEADER)
+            self.dic_leader[laneID] = self.order_vet_veh(self.dic_leader[laneID],laneID)
+
+            if tailID != SecondLEADER:
+                frontID = tailID
+                while frontID != SecondLEADER:
+                    self.topology[frontID]["leader"] = SecondLEADER
+                    secondCar = frontID
+                    frontID = self.topology[frontID]["front"]                    
                 
-            self.topology[LEADER]["tail"] = self.topology[joiner_id]["tail"]
-        else:
-            self.topology[LEADER]["tail"] = joiner_id
-            
+                self.topology[SecondLEADER]["second"] = secondCar
+                self.topology[SecondLEADER]["tail"] = tailID
+                self.calc_platoon_size(plexe,SecondLEADER,self.topology) 
+
+        self.topology[LEADER]["tail"] = joiner_id            
         self.topology[joiner_id] = {"leader": LEADER, "front": front_join_id} 
         
         plexe.set_active_controller(joiner_id, CACC)
@@ -187,7 +186,7 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
         #Atualizar distância entre o Lider e o último carro
         self.calc_platoon_size(plexe,LEADER,self.topology)
 
-    def get_distance_between_leaders(self,plexe,distance_max = 25):
+    def get_distance_between_leaders(self,plexe):
         
         for routeID,leaders in self.dic_leader.items():
             qtd_lead = len(leaders)
@@ -206,7 +205,7 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
                     if (traci.vehicle.getLaneID(main_leader)[0:3]=='end') and (traci.vehicle.getLanePosition(main_leader)> position_lane_max):
                         main_leader = leadID
                         continue
-
+                    #Caso já tenha atravessado o cruzamento
                     if (traci.vehicle.getLaneID(main_leader)[0:3]!='end'):
                         main_leader = leadID
                         continue
@@ -214,7 +213,7 @@ class Intelligent_Intersection_DynamicPlatoons(Intelligent_Intersection_MOD):
                     distance = get_distance(plexe, main_leader, leadID)
 
     #                 print("[{}-{}]: {}".format(main_leader,leadID,distance))
-                    if distance < distance_max:
+                    if distance < self.DISTANCE_MAX:
                         if self.topology[main_leader]["tail"]== None: # Lider sem pelotão
                             self.join_platoon(plexe, main_leader, leadID,routeID)
                         else:
