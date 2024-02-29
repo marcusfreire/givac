@@ -8,6 +8,8 @@ class Intelligent_Intersection_MOD(Intelligent_Intersection):
         self.mod_step_length = 10
         self.step_lenght = 0.01
 
+        self.dic_colisoes = {'step':[],'numColisoes':[],'veiculosID':[]}
+
     def start(self,sumo_cmd,number_steps,number_steps_communication_for_second=0.1,step_lenght = 0.01):
         '''Função para executar o SUMO atraves do TRACI 
         Tamanho padrão do step_lenght = 0.01 do SUMO, ou seja 10 ms, então para cada 1 segundo
@@ -40,7 +42,14 @@ class Intelligent_Intersection_MOD(Intelligent_Intersection):
                 self.smart_traffic_light(plexe)
 
             if self.step % self.ADD_PLATOON_STEP == 0:  # add new platoon every X steps
-                self.state= add_platoons(plexe, self.topology, self.step,self.state,self.ADD_PLATOON_PRO, self.ADD_PLATOON_STEP)   
+                self.state= add_platoons(plexe, self.topology, self.step,self.state,self.ADD_PLATOON_PRO, self.ADD_PLATOON_STEP)
+
+            numColisoes = traci.simulation.getCollidingVehiclesNumber()
+            if numColisoes != 0:
+                self.dic_colisoes['step'].append(self.step)
+                self.dic_colisoes['numColisoes'].append(numColisoes)
+                self.dic_colisoes['veiculosID'].append(traci.simulation.getCollidingVehiclesIDList())
+                break   
 
             self.step += 1
 

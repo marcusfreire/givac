@@ -25,7 +25,7 @@ MAX_ACCEL = 2.6
 #DECEL = 3.5
 STOP_LINE = 15.0
 INITIAL_LANE_INTERSECTION_LENGTH = 486.4 #Tamanho da pista inicial do cruzamento em metros
-BLOCKING_ZONE = 100 # Zona em que um veículo não irá mais se juntar ao pelotão, pois está muito próximo do cruzamneto
+# BLOCKING_ZONE = 100 # Zona em que um veículo não irá mais se juntar ao pelotão, pois está muito próximo do cruzamneto
 
 def communicate(plexe, topology):
     """ 
